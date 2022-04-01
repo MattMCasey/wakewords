@@ -15,14 +15,13 @@ p = pyaudio.PyAudio()
 
 def accept_stream():
     """
+    Accepts stream from front-end
     """
     stream = p.open(format=FORMAT,
                     channels=CHANNELS,
                     rate=RATE,
                     input=True,
                     frames_per_buffer=CHUNK)
-
-    print("* recording")
 
     frames = []
     max_frames = int(RATE / CHUNK * WINDOW_SECS)
@@ -46,12 +45,14 @@ def accept_stream():
             save_file(WAVE_OUTPUT_FILENAME, frames)
 
 
-
-    print("* done recording")
-
-
 def save_file(output_filename, frames):
     """
+    Saves running window file
+
+    :param output_filename: filename to save to
+    :param frames: list of audio chunks
+
+    :returns: None, saves file
     """
     wf = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
     wf.setnchannels(1)
