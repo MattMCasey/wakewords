@@ -1,0 +1,12 @@
+name: wakewords
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python==3.7.4
+  - pip==19.2.3
+
+  - pip:
+    - Flask
+    - pyaudio
+    - wave
