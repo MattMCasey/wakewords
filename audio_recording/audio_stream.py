@@ -1,10 +1,17 @@
-import pyaudio
 import wave
+import os
+from audio_recording import model_dummy as model
+from pydub import AudioSegment
+from pydub.silence import split_on_silence
+from pydub.utils import make_chunks
+import pyaudio
+import io
 
 CHUNK = 1024
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
-RATE = 44100
+# RATE = 44100
+RATE = 48000
 WINDOW_SECS = 3
 WINDOW_SLIDE = 1
 WAVE_OUTPUT_FILENAME = "voice.wav"
@@ -35,8 +42,8 @@ def accept_stream():
         frames.append(data)
         excess_frames = len(frames) - max_frames
 
-        print(len(frames))
-        print(excess_frames)
+        # print(len(frames))
+        # print(excess_frames)
 
         if excess_frames > 0:
             frames = frames[excess_frames:]
@@ -60,6 +67,74 @@ def save_file(output_filename, frames):
     wf.setframerate(RATE)
     wf.writeframes(b''.join(frames))
     wf.close()
+
+
+def save_new_wakeword(blob, filename):
+    """
+    saves new wakeword
+    """
+    print('save_new_wakeword')
+    s = io.BytesIO(blob)
+    audio = AudioSegment.from_file(s, sample_width=2, frame_rate=RATE, format='wav',
+                                channels=2)
+
+
+    audio.export(filename + '.wav', format='wav')
+
+    if not os.path.isdir(filename):
+        os.mkdir(filename)
+
+    chunks = split_on_silence (
+    # Use the loaded audio.
+    audio, min_silence_len = 300, silence_thresh = -40
+    )
+
+    for i, c in enumerate(chunks):
+        c.export(os.path.join(filename, str(i) + '.wav'), format='wav')
+
+
+
+
+def save_blob_from_js(blob, filename):
+    """
+    """
+
+
+    s = io.BytesIO(blob)
+    audio = AudioSegment.from_file(s, sample_width=2, frame_rate=RATE, format='wav',
+                                channels=2)
+
+    if os.path.exists(filename):
+        # print('exists')
+        existing_audio = AudioSegment.from_file(filename, sample_width=2,
+                                                frame_rate=RATE, format='wav',
+                                                channels=2)
+
+        new_audio = existing_audio + audio
+    else:
+        new_audio = AudioSegment.silent(duration=100000) + audio
+
+    chunks = make_chunks(new_audio, 100)
+    output_audio = AudioSegment.silent(duration=0)
+    for c in chunks[-20:]:
+        output_audio += c
+
+    output_audio.export(filename, format='wav')
+
+    return model.dummy_detection(output_audio)
+
+    # new_audio.export(filename, format='wav')
+
+    # with open(filename, 'wb') as f:
+        # f.write(blob)
+    # wf = wave.open(filename, 'wb')
+    # wf.setnchannels(1)
+    # wf.setsampwidth(p.get_sample_size(FORMAT))
+    # wf.setframerate(RATE)
+    # wf.writeframes(blob)
+    # wf.close()
+
+
 
 
 if __name__ == '__main__':

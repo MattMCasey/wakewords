@@ -2,14 +2,26 @@ var gumStream; // Stream from getUserMedia()
 var rec; // Recorder.js object
 var input; // MediaStreamAudioSourceNode we'll be recording
 var recordingNotStopped; // User pressed record button and keep talking, still not stop button pressed
-const trackLengthInMS = 100; // Length of audio chunk in miliseconds
-const maxNumOfSecs = 1000; // Number of mili seconds we support per recording (1 second)
+const trackLengthInMS = 10000; // Length of audio chunk in miliseconds
+const maxMS = 10000; // Number of mili seconds we support per recording (1 second)
 
 
 //Extend the Recorder Class and add clear() method
 // Recorder.prototype.step = function () {
     // this.clear();
 // };
+const form = document.getElementById('wakeword');
+
+var wakewordName = "dummy"
+
+form.addEventListener('submit', (event) => {
+    // handle the form data
+    event.preventDefault();
+    wakewordName = form.elements['name'].value;
+    console.log(wakewordName);
+});
+
+
 
 // Shim for AudioContext when it's not available.
 var AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -25,12 +37,21 @@ stopButton.addEventListener("click", stopRecording);
 //Asynchronous function to stop the recoding in each second and export blob to a wav file
 const sleep = time => new Promise(resolve => setTimeout(resolve, time));
 
+
+
 const asyncFn = async() => {
-  for (let i = 0; i < maxNumOfSecs; i++) {
+  var elapsedMS = 0;
+  for (let i = 0; i < maxMS; i++) {
+
     if (recordingNotStopped) {
+      elapsedMS += trackLengthInMS;
       rec.record();
       await sleep(trackLengthInMS);
       rec.stop();
+      if (elapsedMS >= maxMS) {
+        console.log("max length");
+        stopRecording();
+      }
 
       //stop microphone access
       // gumStream.getAudioTracks()[0].stop();
@@ -98,19 +119,15 @@ function stopRecording() {
   gumStream.getAudioTracks()[0].stop();
 }
 
-async function createWaveBlob(blob) {
+function createWaveBlob(blob) {
 
 
   // var url = URL.createObjectURL(blob);
 
   //Convert the blob to a wav file and call the sendBlob function to send the wav file to the server
   // var convertedfile = new File([blob], 'filename.wav');
-  let wakeCheck = await fetch(`/audio_reciever`, {method:"POST", body:blob})
-                 .then((response) =>  {
-      return response.json();
-    })
-               // .then(response => console.log(response.text()))
-
-   console.log(wakeCheck.result);
+  fetch(`/accept_wakeword/`+ wakewordName, {method:"POST", body:blob})
+                .then(response => console.log(response.text()))
+    ;
   // sendBlob(convertedfile);
 }

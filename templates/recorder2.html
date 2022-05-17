@@ -1,0 +1,38 @@
+onclick = ()=>{
+  onclick = null;
+  const ctx = new AudioContext();
+  const osc1 = ctx.createOscillator();
+  const osc2 = ctx.createOscillator();
+  osc1.frequency.value = 300;
+  osc1.start(0);
+  osc2.start(0);
+
+  const merger = ctx.createChannelMerger();
+  const dest = ctx.createMediaStreamDestination();
+  merger.connect( dest );
+
+  osc1.connect( merger, 0, 0 );
+  osc2.connect( merger, 0, 1 );
+
+  // for nodes to output sound in Chrome
+  // they need to be connected to the destination
+  // ...
+  const mute = ctx.createGain();
+  mute.gain.value = 0;
+  mute.connect( ctx.destination );
+  osc1.connect( mute );
+  osc2.connect( mute );
+
+  const chunks = [];
+  const rec = new MediaRecorder( dest.stream );
+  rec.ondataavailable = e => chunks.push(e.data)
+  rec.onstop = e => {
+    output.src = URL.createObjectURL( new Blob( chunks ) );
+  };
+  rec.start();
+  setTimeout( () => rec.stop(), 5000 );
+  log.remove();
+};
+
+<p id="log">click to start recording of 5s sample</p>
+<audio id="output" controls></audio>

@@ -1,12 +1,44 @@
 import os
 from flask import Flask, render_template, Response, request, redirect
 from audio_recording import audio_stream as aud
+from time import time
 
 
 app = Flask(__name__)
 #
 #
-# @app.route("/recorder", methods=["GET", "POST"])
+@app.route("/", methods=["GET"])
+def serve_homepage():
+    return render_template('index.html')
+
+
+@app.route("/create_wakeword", methods=["GET"])
+def create_wakeword():
+    return render_template('set_wakeword.html')
+
+
+@app.route("/accept_wakeword/<wakeword_name>", methods=["POST"])
+def accept_wakeword(wakeword_name):
+    aud.save_new_wakeword(request.data, wakeword_name)
+    print('accept_wakeword')
+    print(wakeword_name)
+    # print(dir(request))
+    # print(request.data)
+    return {"response": "accepted"}
+
+
+@app.route("/recorder", methods=["GET", "POST"])
+def recorder():
+    if request.method == "POST":
+        f = request.files['audio_data']
+        with open('audio.wav', 'wb') as audio:
+            f.save(audio)
+
+        return render_template('recorder.html', request="POST")
+    else:
+        return render_template('recorder.html')
+
+# @app.route("/recorder2", methods=["GET", "POST"])
 # def recorder():
 #     if request.method == "POST":
 #         f = request.files['audio_data']
@@ -14,10 +46,34 @@ app = Flask(__name__)
 #             f.save(audio)
 #         print('file uploaded successfully')
 #
-#         return render_template('recorder.html', request="POST")
+#         return render_template('recorder2.html', request="POST")
 #     else:
-#         return render_template('recorder.html')
-#
+#         return render_template('recorder2.html')
+
+@app.route("/get_filename", methods=["GET"])
+def get_filename():
+    filename = str(round(time())) + '.wav'
+    print(filename)
+    return {'filename': filename}
+
+
+
+@app.route("/audio_reciever", methods=["POST"])
+def audio_reciever():
+
+    # print(dir(request.args.to_dict()))
+    # print(request.args.to_dict())
+    print(request.content_length)
+    # print(request.get_data())
+    # print(request.get_json())
+    # ts = str(round(time()))
+    ts = 'test'
+    result = aud.save_blob_from_js(request.data, f'{ts}.wav')
+
+    return {'result': result}
+    # # print(request.data)
+    # return 'autio_reciever pinged'
+
 # @app.route("/a2", methods=["GET"])
 # def root():
 #     return render_template('index.html')
@@ -49,4 +105,4 @@ def get_stream():
 #     return '<h1>Success</h1>'
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=8088, debug=True)
