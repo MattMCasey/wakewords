@@ -73,26 +73,23 @@ def save_new_wakeword(blob, filename):
     """
     saves new wakeword
     """
-    print('save_new_wakeword')
+
     s = io.BytesIO(blob)
     audio = AudioSegment.from_file(s, sample_width=2, frame_rate=RATE, format='wav',
                                 channels=2)
 
+    folder = f'raw_audio/{filename}/'
 
-    audio.export(filename + '.wav', format='wav')
-
-    if not os.path.isdir(filename):
-        os.mkdir(filename)
+    if not os.path.isdir(folder):
+        os.mkdir(folder)
 
     chunks = split_on_silence (
     # Use the loaded audio.
-    audio, min_silence_len = 300, silence_thresh = -40
+    audio, min_silence_len = 500, silence_thresh = -40
     )
 
     for i, c in enumerate(chunks):
-        c.export(os.path.join(filename, str(i) + '.wav'), format='wav')
-
-
+        c.export(os.path.join(folder, str(i) + '.wav'), format='wav')
 
 
 def save_blob_from_js(blob, filename):

@@ -2,7 +2,7 @@ var gumStream; // Stream from getUserMedia()
 var rec; // Recorder.js object
 var input; // MediaStreamAudioSourceNode we'll be recording
 var recordingNotStopped; // User pressed record button and keep talking, still not stop button pressed
-const trackLengthInMS = 100; // Length of audio chunk in miliseconds
+const trackLengthInMS = 500; // Length of audio chunk in miliseconds
 const maxNumOfSecs = 1000; // Number of mili seconds we support per recording (1 second)
 
 
@@ -17,6 +17,22 @@ var audioContext //audio context to help us record
 
 var recordButton = document.getElementById("recordButton");
 var stopButton = document.getElementById("stopButton");
+
+
+var availableWakewords = getWakewords()
+
+var wakewordName = "dummy"
+
+
+document.getElementById("form").addEventListener('submit', (event) => {
+
+    event.preventDefault();
+    var select = document.getElementById('wakewords');
+    var value = select.options[select.selectedIndex].value;
+    wakewordName = value;
+
+    console.log(wakewordName);
+});
 
 //Event handlers for above 2 buttons
 recordButton.addEventListener("click", startRecording);
@@ -100,17 +116,37 @@ function stopRecording() {
 
 async function createWaveBlob(blob) {
 
-
-  // var url = URL.createObjectURL(blob);
-
-  //Convert the blob to a wav file and call the sendBlob function to send the wav file to the server
-  // var convertedfile = new File([blob], 'filename.wav');
-  let wakeCheck = await fetch(`/audio_reciever`, {method:"POST", body:blob})
+  let wakeCheck = await fetch(`/audio_reciever/${wakewordName}`, {method:"POST", body:blob})
                  .then((response) =>  {
       return response.json();
     })
                // .then(response => console.log(response.text()))
+  if (wakeCheck.result != 'none_detected'){
+  document.querySelector("#response").innerHTML = '<h1>' + wakeCheck.result +'</h1>';
 
-   console.log(wakeCheck.result);
+} else {
+  document.querySelector("#response").innerHTML = '<h1></h1>';
+}
+return wakeCheck.result
+   // console.log(wakeCheck.result);
+  // sendBlob(convertedfile);
+}
+
+async function getWakewords() {
+
+  let wakewords = await fetch(`/get_available_wakewords`)
+                 .then((response) =>  {
+      return response.json();
+    })
+    .then(data => {
+      const html = data.wakewords.map(wakeword => {
+        return `<option value="${wakeword}">${wakeword}</option>`
+      })
+      document.querySelector("#wakewords").innerHTML = html;
+    })
+
+    // document.querySelector("#wakewords").innerHTML(html);
+               // .then(response => console.log(response.text()))
+   // console.log(wakeCheck.result);
   // sendBlob(convertedfile);
 }

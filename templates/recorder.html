@@ -8,10 +8,40 @@
   <body>
     <h1>WakeWord detector</h1>
 
+<!--
+    <div id="form">
+      <form action="/accept_wakeword" method="post" id="wakeword">
+        <label for="name">Type out your wakeword / wake phrase:</label><br>
+        <input type='text', id="name", name="name">
+        <p>
+        <button type="submit">Submit</button>
+      </form>
+
+    <div id="controls">
+     <button id="recordButton">Record</button>
+     <button id="stopButton" disabled>Stop</button>
+    </div>
+     <p>
+    </div> -->
+
+
+    <div id="form">
+    <form action="#" id="wakeword">
+      <label for="name">Choose a wakeword:</label><br>
+      <select id="wakewords" name="name">
+
+      </select>
+      <button type="submit">Submit</button>
+    </form>
+
+
     <div id="controls">
      <button id="recordButton">Stream</button>
      <button id="stopButton" disabled>Stop</button>
     </div>
+    </div>
+
+    <div id="response"></div>
 
     <!-- inserting these scripts at the end to be able to use all the elements in the DOM -->
     <script src="https://cdn.rawgit.com/mattdiamond/Recorderjs/08e7abd9/dist/recorder.js"></script>

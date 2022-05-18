@@ -1,6 +1,7 @@
 import os
 from flask import Flask, render_template, Response, request, redirect
 from audio_recording import audio_stream as aud
+from utils import flask_utils as u
 from time import time
 
 
@@ -12,6 +13,11 @@ def serve_homepage():
     return render_template('index.html')
 
 
+@app.route("/get_available_wakewords", methods=["GET"])
+def get_available_wakewords():
+    return {'wakewords': [''] + u.get_available_wakewords()}
+
+
 @app.route("/create_wakeword", methods=["GET"])
 def create_wakeword():
     return render_template('set_wakeword.html')
@@ -20,7 +26,7 @@ def create_wakeword():
 @app.route("/accept_wakeword/<wakeword_name>", methods=["POST"])
 def accept_wakeword(wakeword_name):
     aud.save_new_wakeword(request.data, wakeword_name)
-    print('accept_wakeword')
+    # print('accept_wakeword')
     print(wakeword_name)
     # print(dir(request))
     # print(request.data)
@@ -50,17 +56,17 @@ def recorder():
 #     else:
 #         return render_template('recorder2.html')
 
-@app.route("/get_filename", methods=["GET"])
-def get_filename():
-    filename = str(round(time())) + '.wav'
-    print(filename)
-    return {'filename': filename}
+# @app.route("/get_filename", methods=["GET"])
+# def get_filename():
+#     filename = str(round(time())) + '.wav'
+#     print(filename)
+#     return {'filename': filename}
 
 
-
-@app.route("/audio_reciever", methods=["POST"])
-def audio_reciever():
-
+@app.route("/audio_reciever/<wakeword_name>", methods=["POST"])
+def audio_reciever(wakeword_name):
+    print(wakeword_name)
+    print(request.form)
     # print(dir(request.args.to_dict()))
     # print(request.args.to_dict())
     print(request.content_length)

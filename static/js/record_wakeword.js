@@ -17,6 +17,7 @@ var wakewordName = "dummy"
 form.addEventListener('submit', (event) => {
     // handle the form data
     event.preventDefault();
+    // console.log(form);
     wakewordName = form.elements['name'].value;
     console.log(wakewordName);
 });
