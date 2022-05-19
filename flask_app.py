@@ -23,7 +23,7 @@ def get_available_wakewords():
     """
     Gets available wakewords (for populating wakeword dropdown)
     """
-    return {'wakewords': [''] + u.get_available_wakewords()}
+    return {'wakewords': [''] + aud.get_available_wakewords()}
 
 
 @app.route("/create_wakeword", methods=["GET"])
@@ -57,8 +57,7 @@ def audio_reciever(wakeword_name, ts):
     """
     Endpoint for detecting wakeword in audio stream
     """
-
-    result = aud.ingest_blob_from_js(request.data, f'{ts}.wav')
+    result = aud.ingest_blob_from_js(request.data, f'{ts}.wav', wakeword_name)
 
     return {'result': result}
 

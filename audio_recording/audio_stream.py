@@ -7,6 +7,10 @@ from pydub.utils import make_chunks
 import time
 import io
 
+fake_veccer = model.FakeVectorGenerator()
+fake_comparison = model.FakeComparisonModel()
+model_suite = model.ModelWrapper(fake_veccer, fake_comparison)
+
 RATE = 48000
 
 def save_new_wakeword(blob, filename):
@@ -27,13 +31,22 @@ def save_new_wakeword(blob, filename):
     if not os.path.isdir(folder):
         os.mkdir(folder)
 
-    chunks = split_on_silence (
-    # Use the loaded audio.
-    audio, min_silence_len = 500, silence_thresh = -40
-    )
+    chunks = split_on_silence(audio, min_silence_len = 500,
+                              silence_thresh = -40)
 
+    paths = []
     for i, c in enumerate(chunks[:-1]):
-        c.export(os.path.join(folder, str(i) + '.wav'), format='wav')
+        path = os.path.join(folder, str(i) + '.wav')
+        paths.append(path)
+        c.export(path, format='wav')
+
+    model_suite.generate_new_mean_vector(paths, filename.split('.')[0])
+
+
+def get_available_wakewords():
+    """
+    """
+    return model_suite.furnish_wakewords()
 
 
 def get_blob_rolling_window(blob, filename, folder):
@@ -89,7 +102,7 @@ def purge_old_files(folder, max_mins):
             os.remove(f)
 
 
-def ingest_blob_from_js(blob, filename):
+def ingest_blob_from_js(blob, filename, target_wakeword):
     """
     Ingests audio. Gets window. Passes to model. Returns result. Cleans up.
 
@@ -107,4 +120,4 @@ def ingest_blob_from_js(blob, filename):
 
     output_audio.export(filename, format='wav')
 
-    return model.dummy_detection(output_audio)
+    return model_suite.check_for_wakeword(output_audio, target_wakeword)
