@@ -6,17 +6,13 @@ const trackLengthInMS = 500; // Length of audio chunk in miliseconds
 const maxNumOfSecs = 1000; // Number of mili seconds we support per recording (1 second)
 
 
-//Extend the Recorder Class and add clear() method
-// Recorder.prototype.step = function () {
-    // this.clear();
-// };
-
-// Shim for AudioContext when it's not available.
 var AudioContext = window.AudioContext || window.webkitAudioContext;
 var audioContext //audio context to help us record
 
 var recordButton = document.getElementById("recordButton");
 var stopButton = document.getElementById("stopButton");
+
+var ts = Math.round((new Date()).getTime() / 1000);
 
 
 var availableWakewords = getWakewords()
@@ -47,9 +43,6 @@ const asyncFn = async() => {
       rec.record();
       await sleep(trackLengthInMS);
       rec.stop();
-
-      //stop microphone access
-      // gumStream.getAudioTracks()[0].stop();
 
       //Create the wav blob and pass it on to createWaveBlob
       rec.exportWAV(createWaveBlob);
@@ -86,9 +79,6 @@ function startRecording() {
       numChannels: 1
     });
 
-    //Call the asynchronous function to split and export audio
-    // filename = getFileName()
-
     asyncFn();
     console.log("Recording started");
 
@@ -114,13 +104,13 @@ function stopRecording() {
   gumStream.getAudioTracks()[0].stop();
 }
 
+//Handles consumption of audio through Flask endpoint
 async function createWaveBlob(blob) {
 
-  let wakeCheck = await fetch(`/audio_reciever/${wakewordName}`, {method:"POST", body:blob})
+  let wakeCheck = await fetch(`/audio_reciever/${wakewordName}/${ts}`, {method:"POST", body:blob})
                  .then((response) =>  {
       return response.json();
     })
-               // .then(response => console.log(response.text()))
   if (wakeCheck.result != 'none_detected'){
   document.querySelector("#response").innerHTML = '<h1>' + wakeCheck.result +'</h1>';
 
@@ -128,10 +118,10 @@ async function createWaveBlob(blob) {
   document.querySelector("#response").innerHTML = '<h1></h1>';
 }
 return wakeCheck.result
-   // console.log(wakeCheck.result);
-  // sendBlob(convertedfile);
+
 }
 
+//Loads available wakewords for dropdown (via Flask endpoint)
 async function getWakewords() {
 
   let wakewords = await fetch(`/get_available_wakewords`)
@@ -145,8 +135,4 @@ async function getWakewords() {
       document.querySelector("#wakewords").innerHTML = html;
     })
 
-    // document.querySelector("#wakewords").innerHTML(html);
-               // .then(response => console.log(response.text()))
-   // console.log(wakeCheck.result);
-  // sendBlob(convertedfile);
 }

@@ -6,10 +6,7 @@ const trackLengthInMS = 10000; // Length of audio chunk in miliseconds
 const maxMS = 10000; // Number of mili seconds we support per recording (1 second)
 
 
-//Extend the Recorder Class and add clear() method
-// Recorder.prototype.step = function () {
-    // this.clear();
-// };
+//Handles recieving the chosen wakeword from the dropdown
 const form = document.getElementById('wakeword');
 
 var wakewordName = "dummy"
@@ -54,9 +51,6 @@ const asyncFn = async() => {
         stopRecording();
       }
 
-      //stop microphone access
-      // gumStream.getAudioTracks()[0].stop();
-
       //Create the wav blob and pass it on to createWaveBlob
       rec.exportWAV(createWaveBlob);
       rec.clear();
@@ -93,7 +87,6 @@ function startRecording() {
     });
 
     //Call the asynchronous function to split and export audio
-    // filename = getFileName()
 
     asyncFn();
     console.log("Recording started");
@@ -120,15 +113,9 @@ function stopRecording() {
   gumStream.getAudioTracks()[0].stop();
 }
 
+//sends the recording to the accept_wakeword Flask endpoint
 function createWaveBlob(blob) {
 
-
-  // var url = URL.createObjectURL(blob);
-
-  //Convert the blob to a wav file and call the sendBlob function to send the wav file to the server
-  // var convertedfile = new File([blob], 'filename.wav');
   fetch(`/accept_wakeword/`+ wakewordName, {method:"POST", body:blob})
-                .then(response => console.log(response.text()))
-    ;
-  // sendBlob(convertedfile);
+                .then(response => console.log(response.text()));
 }

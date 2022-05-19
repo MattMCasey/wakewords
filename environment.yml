@@ -1,4 +1,5 @@
 name: wakewords
+
 channels:
   - defaults
   - conda-forge
@@ -8,5 +9,7 @@ dependencies:
 
   - pip:
     - Flask
-    - pyaudio
     - wave
+    - numpy
+    - pydub
+    - pyopenssl

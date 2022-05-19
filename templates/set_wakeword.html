@@ -7,14 +7,33 @@
   </head>
   <body>
     <h1>RECORD YOUR WAKEWORD</h1>
+    <h2>Instructions</h2>
+    <ol>
+      <li>Type out your wakeword / wake phrase in the text box below</li>
+      <li>Click "Submit" (This is important. If you don't click submit the wakeword won't index properly)</li>
+      <li>Click "Record"</li>
+        <ul>
+          <li>The recorder will run for ten seconds</li>
+          <li>You will have to give the brower permission to use your microphone</li>
+        </ul>
+      <li>Repeat your wakeword / wake phrase</li>
+      <ul>
+        <li>For best results</li>
+
+      <ol>
+        <li>Record the wakeword / wake phrase in a quiet environment</li>
+        <li>Vary how you say the wakeword / wake phrase</li>
+        <li>Pause in between each time you say it</li>
+      </ol>
+      </ul>
+      <li>Wait a few minutes and then go to the <a href="/use_wakeword">use wakeword page</a> to try it out</li>
+    </ol>
     <div id="form">
       <form action="/accept_wakeword" method="post" id="wakeword">
-        <label for="name">Type out your wakeword / wake phrase:</label><br>
+        <label for="name"><h2>Type out your wakeword / wake phrase:</h2></label>
         <input type='text', id="name", name="name">
-        <p>
         <button type="submit">Submit</button>
       </form>
-
     <div id="controls">
      <button id="recordButton">Record</button>
      <button id="stopButton" disabled>Stop</button>

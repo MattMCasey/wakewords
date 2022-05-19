@@ -8,26 +8,20 @@
   <body>
     <h1>WakeWord detector</h1>
 
-<!--
-    <div id="form">
-      <form action="/accept_wakeword" method="post" id="wakeword">
-        <label for="name">Type out your wakeword / wake phrase:</label><br>
-        <input type='text', id="name", name="name">
-        <p>
-        <button type="submit">Submit</button>
-      </form>
+    <h2>Instructions</h2>
+    <ol>
+      <li>Choose your wakeword from the dropdown</li>
+      <li>Click the "Submit" button</li>
+      <li>Click the "Stream" button</li>
+      <li>Give the broswer permission to use your microphone</li>
+      <li>Start talking! When the app detects your wakeword, you'l see an indicator flash on the screen</li>
+    </ol>
 
-    <div id="controls">
-     <button id="recordButton">Record</button>
-     <button id="stopButton" disabled>Stop</button>
-    </div>
-     <p>
-    </div> -->
-
+    If you'd like to create your own wakeword, go to the <a href="/create_wakeword">create wakeword page.</a>
 
     <div id="form">
     <form action="#" id="wakeword">
-      <label for="name">Choose a wakeword:</label><br>
+      <label for="name"><h2>Choose a wakeword:</h2></label>
       <select id="wakewords" name="name">
 
       </select>
@@ -45,6 +39,6 @@
 
     <!-- inserting these scripts at the end to be able to use all the elements in the DOM -->
     <script src="https://cdn.rawgit.com/mattdiamond/Recorderjs/08e7abd9/dist/recorder.js"></script>
-    <script src="/static/js/app.js"></script>
+    <script src="/static/js/detect_wakeword.js"></script>
   </body>
 </html>
