@@ -69,4 +69,4 @@ if __name__ == "__main__":
     local_ip = socket.gethostbyname(hostname)
     # app.run(ssl_context='adhoc')
     # app.run(host=local_ip, port=8088, debug=True, ssl_context='adhoc')
-    app.run(host='0.0.0.0', port=8088, debug=True, ssl_context='adhoc')
+    app.run(host='0.0.0.0', port=8088, debug=True, ssl_context="adhoc")
