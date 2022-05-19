@@ -1,6 +1,14 @@
 import os
 
 
+def make_folder_if_not_exist(folder):
+    """
+    """
+    if not os.path.exists(folder):
+        os.mkdir(folder)
+
+
+
 def get_available_wakewords():
     """
     """

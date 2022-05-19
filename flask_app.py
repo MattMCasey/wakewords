@@ -4,8 +4,10 @@ from audio_recording import audio_stream as aud
 from utils import flask_utils as u
 from time import time
 
-
+# Startup Code
 app = Flask(__name__)
+for f in ['active_recordings', 'raw_audio']
+u.make_folder_if_not_exist(f)
 #
 #
 @app.route("/", methods=["GET"])
