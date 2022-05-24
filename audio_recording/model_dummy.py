@@ -58,7 +58,7 @@ class ModelWrapper:
         self.compare = comparison_model
         self.floor_const = 87
         self.active_folder = 'active_recordings'
-        self.conf_thresh = 0.8
+        self.conf_thresh = 0.96
         self.vec_dict = {}
 
         for stock_wakeword in os.listdir('raw_audio'):
