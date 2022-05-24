@@ -4,12 +4,27 @@ from audio_recording import model_dummy as model
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
 from pydub.utils import make_chunks
+import utils.flask_utils as u
 import time
 import io
+import keras.backend as K
 
-fake_veccer = model.FakeVectorGenerator()
-fake_comparison = model.FakeComparisonModel()
+
+for f in ['active_recordings', 'raw_audio', 'models']:
+    u.make_folder_if_not_exist(f)
+
+model_names = ['final_confidence_model.hdf5', 'final_features_model.hdf5']
+local_dir = 'models'
+s3_prefix = 'model'
+
+for model_name in model_names:
+    model.download_latest_model(model_name, local_dir, s3_prefix)
+
+fake_veccer = model.load_model(local_dir, model_names[1])
+fake_comparison = model.load_model(local_dir, model_names[0])
 model_suite = model.ModelWrapper(fake_veccer, fake_comparison)
+
+model_suite.generate_new_mean_vector('number_one')
 
 RATE = 48000
 
@@ -40,7 +55,7 @@ def save_new_wakeword(blob, filename):
         paths.append(path)
         c.export(path, format='wav')
 
-    model_suite.generate_new_mean_vector(paths, filename.split('.')[0])
+    model_suite.generate_new_mean_vector(filename.split('.')[0])
 
 
 def get_available_wakewords():
@@ -120,4 +135,4 @@ def ingest_blob_from_js(blob, filename, target_wakeword):
 
     output_audio.export(filename, format='wav')
 
-    return model_suite.check_for_wakeword(output_audio, target_wakeword)
+    return model_suite.check_for_wakeword(filename, target_wakeword)
