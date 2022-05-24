@@ -7,19 +7,14 @@ import keras.backend as K
 import librosa
 from sklearn import preprocessing
 
-"""
-PRE DEPLOYMENT TODOs
-
-1. Get anchor vectors
-2. Solidify integration of anchor vectors
-3. Integrate preprocessing pipeline
-4. Integrate anchor-case generation
-5. Try end-to-end
-"""
 
 def download_latest_model(model_name, local_dir, s3_prefix):
     """
     Gets latest version of the models from s3
+
+    :param local_dir: the local directory with models in it
+    :param model_name: the name of the file
+    :param s3_prefix: The prefix folder in S3
     """
     lcl_path = os.path.join(local_dir, model_name)
     s3_path = os.path.join(s3_prefix, model_name)
@@ -45,30 +40,16 @@ def download_latest_model(model_name, local_dir, s3_prefix):
 
 def load_model(local_dir, model_name):
     """
+    Loads the model from local resources
+
+    :param local_dir: the local directory with models in it
+    :param model_name: the name of the file
+
+    :returns: loaded model
     """
     model_path = os.path.join(local_dir, model_name)
     return tf.keras.models.load_model(model_path, compile=False,
                                       custom_objects={"K": K})
-
-
-#
-# class FakeVectorGenerator:
-#
-#     def __init__(self):
-#         pass
-#
-#     def predict(self, preprocessed_audio):
-#         return np.random.random(128)
-#
-#
-# class FakeComparisonModel():
-#
-#     def __init__(self):
-#         pass
-#
-#     def predict_same_word(self, vec1, vec2):
-#         return np.random.random() < 0.25
-#
 
 class ModelWrapper:
 
@@ -77,92 +58,79 @@ class ModelWrapper:
         self.compare = comparison_model
         self.floor_const = 87
         self.active_folder = 'active_recordings'
-        self.conf_thresh = 0.9
+        self.conf_thresh = 0.8
         self.vec_dict = {}
 
         for stock_wakeword in os.listdir('raw_audio'):
             if len(os.listdir(os.path.join('raw_audio', stock_wakeword))) > 3:
                 self.generate_new_mean_vector(stock_wakeword)
-        # self.vec_dict = self._initiate_vector_dicionary()
 
-    def load_audio_file(self, fpath):
-        """
-        Loads audio files form filepath
-
-        :param fpath: path to file
-        """
-        # I don't know if this is better than handing off the audio objects.
-        # I don't know how you're openning them
-        with open(fpath, 'rb') as f:
-            return f
-
-    def preprocess_audio_clip(self, audio_clip):
-        """
-        """
-        # I presume you'll have a preprocessing step.
-        # Just doing a passthrough for now
-        return audio_clip
 
     def generate_new_mean_vector(self, name):
         """
         Generates new mean vector from training examples, adds to dictionary
 
-        :param fpaths: The list of filepaths
         :param name: The name of the wakeword
 
         :returns None:
         """
-        # We can do this as a raw file handoff as well, not sure what's preferred
-        # clips = [self.load_audio_file(f) for f in fpaths]
         target_dir = os.path.join('raw_audio', name)
         anchor_spectrums = self._load_audio_files(target_dir)
         anchor_features = [self.vec_gen(np.expand_dims(anc, 0)) for anc in anchor_spectrums]
         anchor = sum(anchor_features)/len(anchor_features)
-        # I think we should maybe also save the vectors somewhere so that we
-        # don't lose them on reboot? But maybe we don't care
 
         self.vec_dict[name] = anchor
 
     def _convert_wav_to_melSpectrogram(self, wav_file):
+        """
+        Converts audio into spectrogram
+
+        :param wav_file: the path to the target wav file
+
+        :returns: np.array
+        """
         # number of samples in a window per fft
         n_fft = 2048
         hop_length = 256
         signal, sr = librosa.core.load(wav_file)
         mel_spect = librosa.feature.melspectrogram(y=signal, sr=sr, hop_length=hop_length,
-     n_fft=n_fft)
+                                                   n_fft=n_fft)
         mel_spect = librosa.power_to_db(mel_spect, ref=np.max)
         mel_spect = np.abs(mel_spect)
         return mel_spect
 
-
-    def _initiate_vector_dicionary(self):
-        """
-        This should have some code for building a dictionary of the default
-        wakewords and their vectors
-        format {<name>:<vector>}
-        """
-        # This shoudl initiate with some locally stored examples
-        # Code here is simple demo
-        return {k: self.vec_gen.predict([]) for k in ['hello_fourthbrain', 'dummy_too']}
-
     def furnish_wakewords(self):
         """
         Gives the active wakewords
+
+        :returns: list of str
         """
         wakewords = list(self.vec_dict.keys())
         wakewords.sort()
         return wakewords
 
     def _prepare_features_from_filename(self, filename):
-      frame_spectrums = self._load_audio_files(os.path.join(self.active_folder, filename))
-      frame_features = [self.vec_gen(np.expand_dims(frame, 0)) for frame in frame_spectrums]
-      mean_features = sum(frame_features)/len(frame_features)
-      frame_features += [mean_features]
-      return frame_features
+        """
+        Prepares feature vector from filename
+
+        :param filename: the path to the target file
+
+        :returns: numpy array
+        """
+        frame_spectrums = self._load_audio_files(os.path.join(self.active_folder, filename))
+        frame_features = [self.vec_gen(np.expand_dims(frame, 0)) for frame in frame_spectrums]
+        mean_features = sum(frame_features)/len(frame_features)
+        frame_features += [mean_features]
+        return frame_features
 
     def check_for_wakeword(self, audio_filename, anchor_name):
         """
         Checks for the wakeword
+
+        :param audio_filename: The filepath to the target .wav file
+        :param anchor_name: The name of the target wakeword
+
+        :returns: string indicated if wakeword was detected
         """
         prepped = self._prepare_features_from_filename(audio_filename)[0]
         target_vec = self.vec_dict[anchor_name]
@@ -174,16 +142,28 @@ class ModelWrapper:
         return 'none_detected'
 
     def to_3_channels(self, spectro):
-      xi = spectro[:60, :]
-      xi = np.expand_dims(xi, axis=2)
-      for i in range(1,3):
-        xy = spectro[i*30 : (i+2)*30, :]
-        xy = np.expand_dims(xy, axis=2)
-        xi = np.dstack((xi, xy))
-      return xi
+        """
+        Splits spectrogram into three channels
+
+        :param spectro: np.array
+
+        :returns: np.array
+        """
+        xi = spectro[:60, :]
+        xi = np.expand_dims(xi, axis=2)
+        for i in range(1,3):
+            xy = spectro[i*30 : (i+2)*30, :]
+            xy = np.expand_dims(xy, axis=2)
+            xi = np.dstack((xi, xy))
+        return xi
 
     def _load_audio_files(self, dirname):
         """
+        Loads and prepares audio file into a spectrogram
+
+        :param dirname: directory of file path
+
+        :returns: np.array
         """
         floor_const = self.floor_const
 
