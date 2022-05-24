@@ -24,7 +24,8 @@ fake_veccer = model.load_model(local_dir, model_names[1])
 fake_comparison = model.load_model(local_dir, model_names[0])
 model_suite = model.ModelWrapper(fake_veccer, fake_comparison)
 
-model_suite.generate_new_mean_vector('number_one')
+for stock_wakeword in ['number_one', 'hello_milo']:
+    model_suite.generate_new_mean_vector(stock_wakeword)
 
 RATE = 48000
 
