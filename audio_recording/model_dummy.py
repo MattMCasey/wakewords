@@ -51,24 +51,24 @@ def load_model(local_dir, model_name):
                                       custom_objects={"K": K})
 
 
-
-class FakeVectorGenerator:
-
-    def __init__(self):
-        pass
-
-    def predict(self, preprocessed_audio):
-        return np.random.random(128)
-
-
-class FakeComparisonModel():
-
-    def __init__(self):
-        pass
-
-    def predict_same_word(self, vec1, vec2):
-        return np.random.random() < 0.25
-
+#
+# class FakeVectorGenerator:
+#
+#     def __init__(self):
+#         pass
+#
+#     def predict(self, preprocessed_audio):
+#         return np.random.random(128)
+#
+#
+# class FakeComparisonModel():
+#
+#     def __init__(self):
+#         pass
+#
+#     def predict_same_word(self, vec1, vec2):
+#         return np.random.random() < 0.25
+#
 
 class ModelWrapper:
 
@@ -77,7 +77,7 @@ class ModelWrapper:
         self.compare = comparison_model
         self.floor_const = 87
         self.active_folder = 'active_recordings'
-        self.conf_thresh = 0.5
+        self.conf_thresh = 0.9
         # self.vec_dict = self._initiate_vector_dicionary()
         self.vec_dict = {'nullvec': np.random.random(128)}
 

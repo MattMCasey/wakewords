@@ -24,8 +24,9 @@ fake_veccer = model.load_model(local_dir, model_names[1])
 fake_comparison = model.load_model(local_dir, model_names[0])
 model_suite = model.ModelWrapper(fake_veccer, fake_comparison)
 
-# for stock_wakeword in ['number_one', 'hello_milo']:
-#     model_suite.generate_new_mean_vector(stock_wakeword)
+for stock_wakeword in os.listdir('raw_audio'):
+    if len(os.listdir(os.path.join('raw_audio', stock_wakeword))) > 3:
+        model_suite.generate_new_mean_vector(stock_wakeword)
 
 RATE = 48000
 
