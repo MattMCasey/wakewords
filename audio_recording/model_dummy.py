@@ -78,8 +78,12 @@ class ModelWrapper:
         self.floor_const = 87
         self.active_folder = 'active_recordings'
         self.conf_thresh = 0.9
+        self.vec_dict = {}
+
+        for stock_wakeword in os.listdir('raw_audio'):
+            if len(os.listdir(os.path.join('raw_audio', stock_wakeword))) > 3:
+                self.generate_new_mean_vector(stock_wakeword)
         # self.vec_dict = self._initiate_vector_dicionary()
-        self.vec_dict = {'nullvec': np.random.random(128)}
 
     def load_audio_file(self, fpath):
         """
