@@ -163,11 +163,8 @@ class ModelWrapper:
         prepped = self._prepare_features_from_filename(audio_filename)[0]
         target_vec = self.vec_dict[anchor_name]
 
-        print(prepped.shape)
-        print(target_vec.shape)
-
         conf = self.compare([prepped, target_vec])
-        print(conf)
+
         if conf > self.conf_thresh:
             return anchor_name
         return 'none_detected'
